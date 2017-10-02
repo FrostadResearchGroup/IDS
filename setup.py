@@ -13,7 +13,7 @@ else:
     # TODO: Support this on Linux systems
     args = {}
 
-args['sources'] = []
+args['sources'] = ['core/core.c']
 
 coreExtension = Extension("core", **args)
 
