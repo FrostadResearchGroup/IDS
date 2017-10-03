@@ -7,7 +7,7 @@ if sys.platform == "win32":
         'extra_compile_args': [],
         'library_dirs': ['C:/Program Files/IDS/uEye/Develop/Lib'],
         'libraries': ['ueye_api', 'ueye_tools'],
-        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Deelop/include']
+        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Deelop/include', 'C:\Anaconda3\include']
     }
 else:
     # TODO: Support this on Linux systems
