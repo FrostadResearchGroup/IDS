@@ -1,9 +1,10 @@
-#prgama once
+#pragma once
 
 #ifndef CORE_H_INCLUDED
 #define CORE_H_INCLUDED
 
-#include<stdint.h>
+#include <Python.h>
+#include <stdint.h>
 
 typedef struct
 {

@@ -1,6 +1,8 @@
+extern "C" {
 #include <Python.h>
 #include <uEye.h>
 #include "core.h"
+}
 
 #if PY_MAJOR_VERSION >= 3
 /*
