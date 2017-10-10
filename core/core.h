@@ -25,6 +25,9 @@ enum Status
     READY,
 };
 
-Camera* init_camera(void);
+PyMethodDef idsMethods[] =
+{
+    {NULL, NULL, 0, NULL} /* sentinel */
+}
 
 #endif

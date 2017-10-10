@@ -2,6 +2,7 @@
 #include <uEye.h>
 #include "core.h"
 
+#if PY_MAJOR_VERSION >= 3
 /*
  * This is only needed for Python3
  * IDS module initialization
@@ -16,3 +17,17 @@ static struct PyModuleDef idsModule =
               or -1 if the module keeps state in global variables. */
     idsMethods
 };
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_ids(void)
+{
+    return PyModule_Create(&idsModule);
+}
+#else
+PyMODINIT_FUNC initids(void)
+{
+    (void) Py_InitModule("ids", idsMethods);
+}
+#endif
+
