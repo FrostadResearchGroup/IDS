@@ -2,12 +2,11 @@ from distutils.core import setup, Extension
 import sys
 
 if sys.platform == "win32":
-    args = 
-    {
+    args = {
         'extra_compile_args': [],
         'library_dirs': ['C:/Program Files/IDS/uEye/Develop/Lib'],
         'libraries': ['ueye_api', 'ueye_tools'],
-        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Deelop/include', 'C:\Anaconda3\include']
+        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Develop/include', 'C:\Anaconda3\include']
     }
 else:
     # TODO: Support this on Linux systems
@@ -25,5 +24,5 @@ setup(
     url = 'https://github.com/FrostadResearchGroup/IDS',
     license = 'MIT',
     description = 'Python Wrapper Library around IDS Camera SDK',
-    ext_modules = ['core']
+    ext_modules = [coreExtension]
 )
