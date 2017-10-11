@@ -18,14 +18,14 @@ static struct PyModuleDef idsModule = {
 #endif
 
 #if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_ids(void)
+PyMODINIT_FUNC PyInit_core(void)
 {
     return PyModule_Create(&idsModule);
 }
 #else
-PyMODINIT_FUNC initids(void)
+PyMODINIT_FUNC initcore(void)
 {
-    (void) Py_InitModule("ids", idsMethods);
+    (void) Py_InitModule("core", idsMethods);
 }
 #endif
 
@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
 
     /* Add a static module */
 #if PY_MAJOR_VERSION >= 3
-    PyInit_ids();
+    PyInit_core();
 #else
-    initids();
+    initcore();
 #endif
 }
