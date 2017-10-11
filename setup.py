@@ -1,13 +1,17 @@
 from distutils.core import setup, Extension
 import sys
+import os
 
 if sys.platform == "win32":
+    python_path = os.path.dirname(sys.executable)
+    include_dir = python_path + "\\include"
+    lib_dir = python_path + "\\libs"
     args = {
         'extra_compile_args': [],
         'define_macros': [('_IDS_EXPORT', None), ('_CRT_SECURE_NO_WARNINGS', None)],
-        'library_dirs': ['C:/Program Files/IDS/uEye/Develop/Lib'],
+        'library_dirs': ['C:/Program Files/IDS/uEye/Develop/Lib', lib_dir],
         'libraries': ['ueye_api', 'ueye_tools'],
-        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Develop/include', 'C:\Anaconda3\include']
+        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Develop/include', include_dir]
     }
 else:
     # TODO: Support this on Linux systems
