@@ -1,8 +1,5 @@
-extern "C" {
-#include <Python.h>
 #include <uEye.h>
 #include "core.h"
-}
 
 #if PY_MAJOR_VERSION >= 3
 /*
@@ -10,8 +7,7 @@ extern "C" {
  * IDS module initialization
  * Based on https://docs.python.org/3/extending/extending.html#the-module-s-method-table-and-initialization-function
  */
-static struct PyModuleDef idsModule = 
-{
+static struct PyModuleDef idsModule = {
     PyModuleDef_HEAD_INIT,
     "ids", /* name of module */
     NULL,  /* module documentation */
@@ -33,3 +29,25 @@ PyMODINIT_FUNC initids(void)
 }
 #endif
 
+int main(int argc, char *argv[])
+{
+#if PY_MAJOR_VERSION >= 3
+    wchar_t name[128];
+    mbstowcs(name, argv[0], 128);
+#else
+    char name[128];
+    strncpy(name, argv[0], 128);
+#endif    
+    /* Pass argv[0] to the Pythin interpreter */
+    Py_SetProgramName(name);
+
+    /* Initialize the Python interpreter */
+    Py_Initialize();
+
+    /* Add a static module */
+#if PY_MAJOR_VERSION >= 3
+    PyInit_ids();
+#else
+    initids();
+#endif
+}

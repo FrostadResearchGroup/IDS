@@ -29,6 +29,6 @@ enum Status
 PyMethodDef idsMethods[] =
 {
     {NULL, NULL, 0, NULL} /* sentinel */
-}
+};
 
 #endif
