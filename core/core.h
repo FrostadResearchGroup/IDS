@@ -4,7 +4,12 @@
 #define CORE_H_INCLUDED
 
 #include <Python.h>
+
+#if PY_MAJOR_VERSION >= 3
 #include <stdint.h>
+#else
+#include "stdint.h"
+#endif
 
 typedef struct
 {
