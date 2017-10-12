@@ -17,9 +17,9 @@ else:
     # TODO: Support this on Linux systems
     args = {}
 
-args['sources'] = ['core/core.c']
+args['sources'] = ['src/ids.c']
 
-coreExtension = Extension("core", **args)
+coreExtension = Extension("ids", **args)
 
 setup(
     name = 'ids',

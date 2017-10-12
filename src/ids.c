@@ -1,5 +1,5 @@
 #include <uEye.h>
-#include "core.h"
+#include "ids.h"
 
 #if PY_MAJOR_VERSION >= 3
 /*
@@ -18,14 +18,14 @@ static struct PyModuleDef idsModule = {
 #endif
 
 #if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_core(void)
+PyMODINIT_FUNC PyInit_ids(void)
 {
     return PyModule_Create(&idsModule);
 }
 #else
-PyMODINIT_FUNC initcore(void)
+PyMODINIT_FUNC initids(void)
 {
-    (void) Py_InitModule("core", idsMethods);
+    (void) Py_InitModule("ids", idsMethods);
 }
 #endif
 
@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
 
     /* Add a static module */
 #if PY_MAJOR_VERSION >= 3
-    PyInit_core();
+    PyInit_ids();
 #else
-    initcore();
+    initids();
 #endif
 }
