@@ -11,6 +11,9 @@
 #include "stdint.h"
 #endif
 
+/*
+ * Struct that defines the underlying Camera class
+ */
 typedef struct
 {
     PyObject_HEAD
@@ -24,6 +27,9 @@ typedef struct
 
 } Camera;
 
+/*
+ * Enum defining the current status of the camera
+ */
 enum Status
 {
     NOT_READY,
@@ -31,9 +37,11 @@ enum Status
     READY,
 };
 
-PyMethodDef idsMethods[] =
-{
-    {NULL, NULL, 0, NULL} /* sentinel */
-};
+/*
+ * Methods for the ids Module
+ */
+extern PyMethodDef idsMethods[];
+
+extern PyTypeObject ids_CameraType;
 
 #endif

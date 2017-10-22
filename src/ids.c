@@ -1,6 +1,11 @@
 #include <uEye.h>
 #include "ids.h"
 
+PyMethodDef idsMethods[] =
+{
+    {NULL, NULL, 0, NULL} /* sentinel */
+};
+
 #if PY_MAJOR_VERSION >= 3
 /*
  * This is only needed for Python3
