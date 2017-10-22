@@ -25,12 +25,35 @@ static struct PyModuleDef idsModule = {
 #if PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC PyInit_ids(void)
 {
-    return PyModule_Create(&idsModule);
+    PyObject * m;
+
+    ids_CameraType.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&ids_CameraType) < 0)
+        return NULL;
+
+    m = PyModule_Create(&idsModule);
+    if (m == NULL)
+    {
+        return NULL;
+    }
+
+    Py_INCREF(&ids_CameraType);
+    PyModule_AddObject(m, "Camera", (PyObject *)(&ids_CameraType));
+    return m;
 }
 #else
 PyMODINIT_FUNC initids(void)
 {
-    (void) Py_InitModule("ids", idsMethods);
+    PyObject* m;
+
+    ids_CameraType.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&ids_CameraType) < 0)
+        return NULL;
+
+    m = Py_InitModule("ids", idsMethods);
+
+    Py_INCREF(&ids_CameraType);
+    PyModule_AddObject(m, "Camera", (PyObject *)(&ids_CameraType));
 }
 #endif
 
