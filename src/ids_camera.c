@@ -15,7 +15,13 @@ PyObject* camera_new
 
     if (self != NULL)
     {
-        
+        self->handle       = 0;
+        self->width        = 0;
+        self->height       = 0;
+        self->bitdepth     = 0;
+        self->color        = 0;
+        self->autofeatures = 0;
+        self->status       = (int)NOT_READY;
     }
     return(PyObject *)self;
 }
