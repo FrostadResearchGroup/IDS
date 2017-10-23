@@ -17,7 +17,7 @@ else:
     # TODO: Support this on Linux systems
     args = {}
 
-args['sources'] = ['src/ids.c']
+args['sources'] = ['src/ids.c', 'src/ids_camera.c']
 
 coreExtension = Extension("ids", **args)
 
