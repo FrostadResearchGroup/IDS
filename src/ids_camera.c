@@ -2,6 +2,9 @@
 #include "ids.h"
 #include "structmember.h"
 
+/*
+ * Initialize the attributes of the newly created Camera object to 0
+ */
 PyObject* camera_new
 (
     PyTypeObject * type,
@@ -26,20 +29,32 @@ PyObject* camera_new
     return(PyObject *)self;
 }
 
+/*
+ * Deallocates all the allocated memory of the Camera
+ */
 void camera_dealloc(Camera* self)
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
+/*
+ * Initialize the newly created object with a camera
+ */
 int camera_init(Camera * self, PyObject * args, PyObject * kwds)
 {
     return 0;
 }
 
+/*
+ * Declaration of all the publicly accessible attributes of the Camera object
+ */
 PyMemberDef camera_members[] = {
     {NULL} /* Sentinel */
 };
 
+/*
+ * Declaration of all the publicly accessible functions of the Camera object
+ */
 PyMethodDef camera_methods[] = {
     {NULL} /* Sentinel */
 };
