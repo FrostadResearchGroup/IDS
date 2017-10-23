@@ -1,12 +1,49 @@
 #include <uEye.h>
 #include "ids.h"
+#include "structmember.h"
+
+PyObject* camera_new
+(
+    PyTypeObject * type,
+    PyObject * args,
+    PyObject * kwds
+)
+{
+    Camera *self;
+
+    self = (Camera *)type->tp_alloc(type, 0);
+
+    if (self != NULL)
+    {
+        
+    }
+    return(PyObject *)self;
+}
+
+void camera_dealloc(Camera* self)
+{
+    Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+int camera_init(Camera * self, PyObject * args, PyObject * kwds)
+{
+    return 0;
+}
+
+PyMemberDef camera_members[] = {
+    {NULL} /* Sentinel */
+};
+
+PyMethodDef camera_methods[] = {
+    {NULL} /* Sentinel */
+};
 
 PyTypeObject ids_CameraType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "ids.Camera",               /* tp_name */
     sizeof(Camera),             /* tp_basicsize */
     0,                          /* tp_itemsize */
-    0,                          /* tp_dealloc */
+    (destructor)camera_dealloc, /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
@@ -23,4 +60,21 @@ PyTypeObject ids_CameraType = {
     0,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "Wrapper object around IDS Camera", /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    camera_methods,            /* tp_methods */
+    camera_members,            /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    (initproc)camera_init,     /* tp_init */
+    0,                         /* tp_alloc */
+    camera_new,                /* tp_new */
 };

@@ -43,5 +43,6 @@ enum Status
 extern PyMethodDef idsMethods[];
 
 extern PyTypeObject ids_CameraType;
+extern PyMethodDef camera_methods[];
 
 #endif
