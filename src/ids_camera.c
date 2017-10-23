@@ -46,6 +46,27 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
 }
 
 /*
+ * Returns the current status of the camera in string format
+ */
+PyObject * camera_status(Camera * self)
+{
+    PyObject * result = NULL;
+    if (self->status == (int)NOT_READY)
+    {
+        result = Py_BuildValue("s","Not Ready");
+    }
+    else if(self->status == (int)READY)
+    {
+        result = Py_BuildValue("s", "Ready");
+    }
+    else
+    {
+        result = Py_BuildValue("s", "Connected");
+    }
+    return result;
+} 
+
+/*
  * Declaration of all the publicly accessible attributes of the Camera object
  */
 PyMemberDef camera_members[] = {
@@ -56,6 +77,9 @@ PyMemberDef camera_members[] = {
  * Declaration of all the publicly accessible functions of the Camera object
  */
 PyMethodDef camera_methods[] = {
+    {"status", (PyCFunction)camera_status, METH_NOARGS,
+     "Return the current status of the Camera"
+    },
     {NULL} /* Sentinel */
 };
 
