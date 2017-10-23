@@ -39,9 +39,38 @@ void camera_dealloc(Camera* self)
 
 /*
  * Initialize the newly created object with a camera
+ * This means the definition of the camera object is:
+ *      def __init__ (self, handle=0)
  */
 int camera_init(Camera * self, PyObject * args, PyObject * kwds)
 {
+    static char *kwlist[] = {"handle", NULL};
+    self->handle = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args,kwds, "|i", kwlist, &self->handle))
+    {
+        return -1;
+    }
+
+    int returnCode = is_InitCamera(&self->handle, NULL);
+    switch(returnCode)
+    {
+        case IS_SUCCESS: 
+            break;
+        case IS_CANT_OPEN_DEVICE:
+            PyErr_SetString(PyExc_IOError, "Camera not connected.");
+            return -1;
+        default:
+            PyErr_Format(PyExc_IOError, "Unable to open camera (Error %d)", returnCode);
+            return -1;
+    }
+
+    self->status = (int)CONNECTED;
+
+    // TODO : Initialize other fields based on the camera info.
+
+    self->status = (int)READY;
+
     return 0;
 }
 
