@@ -1,6 +1,8 @@
 #include <uEye.h>
 #include "ids.h"
 
+PyObject * IDSError;
+
 PyMethodDef idsMethods[] =
 {
     {NULL, NULL, 0, NULL} /* sentinel */
@@ -37,6 +39,14 @@ PyMODINIT_FUNC PyInit_ids(void)
         return NULL;
     }
 
+    /* IDS Exceptions */
+    IDSError = PyErr_NewExceptionWithDoc("ids_core.IDSError",
+            "Base class for exceptions caused by an error with the IDS camera or libraries.",
+            NULL, NULL);
+    Py_INCREF(IDSError);
+    PyModule_AddObject(m, "IDSError", IDSError);
+   
+    /* IDS Objects */
     Py_INCREF(&ids_CameraType);
     PyModule_AddObject(m, "Camera", (PyObject *)(&ids_CameraType));
     return m;
@@ -52,6 +62,14 @@ PyMODINIT_FUNC initids(void)
 
     m = Py_InitModule("ids", idsMethods);
 
+    /* IDS Exceptions */
+    IDSError = PyErr_NewExceptionWithDoc("ids.IDSError",
+            "Base class for exceptions caused by an error with the IDS camera or libraries.",
+            NULL, NULL);
+    Py_INCREF(IDSError);
+    PyModule_AddObject(m, "IDSError", IDSError);
+   
+    /* IDS Objects */
     Py_INCREF(&ids_CameraType);
     PyModule_AddObject(m, "Camera", (PyObject *)(&ids_CameraType));
 }

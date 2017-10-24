@@ -48,4 +48,9 @@ extern PyMethodDef idsMethods[];
 extern PyTypeObject ids_CameraType;
 extern PyMethodDef camera_methods[];
 
+void print_error(Camera * self);
+
+/* IDS Exception Objects */
+extern PyObject * IDSError;
+
 #endif
