@@ -44,7 +44,7 @@ void camera_dealloc(Camera* self)
  *      serial_num   : The serial number of the camera
  *      manufacturer : The manufacturer of the camera
  *      date         : The manufacturing date of the camera
- *      select       : Customizable id of the camera
+ *      id           : Customizable id of the camera
  *      type         : Type of the camera
  */
 PyObject * camera_camera_info(Camera * self)
@@ -113,7 +113,7 @@ PyObject * camera_camera_info(Camera * self)
     PyDict_SetItemString(dict, "manufacturer", manufacturer);
     PyDict_SetItemString(dict, "hw_version", hw_version);
     PyDict_SetItemString(dict, "date", manufacture_date);
-    PyDict_SetItemString(dict, "select", select);
+    PyDict_SetItemString(dict, "id", select);
     PyDict_SetItemString(dict, "type", type);
 
     Py_DECREF(serial_num);
@@ -122,6 +122,96 @@ PyObject * camera_camera_info(Camera * self)
     Py_DECREF(manufacture_date);
     Py_DECREF(select);
     Py_DECREF(type);
+
+    return dict;
+}
+
+/*
+ * Returns the info about the sensor used in the camera
+ * @return Python Dictionary for the sensor info
+ */
+PyObject * camera_sensor_info(Camera * self)
+{
+    SENSORINFO sensor_info;
+    
+    int returnCode = is_GetSensorInfo(self->handle, &sensor_info);
+    if (returnCode!= IS_SUCCESS)
+    {
+        // TODO : Handle Error
+        return NULL;
+    }
+
+    PyObject * sensor_id = Py_BuildValue("h", sensor_info.SensorID);
+    PyObject * sensor_name = PyBytes_FromString(sensor_info.strSensorName);
+    PyObject * max_width = Py_BuildValue("i", sensor_info.nMaxWidth);
+    PyObject * max_height = Py_BuildValue("i", sensor_info.nMaxHeight);
+    PyObject * master_gain = Py_BuildValue("O", sensor_info.bMasterGain ? Py_True : Py_False);
+    PyObject * red_gain = Py_BuildValue("O", sensor_info.bRGain ? Py_True : Py_False);
+    PyObject * green_gain = Py_BuildValue("O", sensor_info.bGGain ? Py_True : Py_False);
+    PyObject * blue_gain = Py_BuildValue("O", sensor_info.bBGain ? Py_True : Py_False);
+    PyObject * global_shutter = Py_BuildValue("O", sensor_info.bGlobShutter ? Py_True : Py_False); 
+    PyObject * pixel_size = Py_BuildValue("d", sensor_info.wPixelSize / 100.0);
+    PyObject * first_pixel_color;
+    PyObject * color_mode;
+
+    switch(sensor_info.nColorMode)
+    {
+        case IS_COLORMODE_MONOCHROME:
+            color_mode = PyBytes_FromString("Monochrome");
+            break;
+        case IS_COLORMODE_BAYER:
+            color_mode = PyBytes_FromString("Bayer");
+            break;
+        case IS_COLORMODE_CBYCRY:
+            color_mode = PyBytes_FromString("CBYCRY");
+            break;
+        case IS_COLORMODE_JPEG:
+            color_mode = PyBytes_FromString("JPEG");
+            break;
+        default:
+            color_mode = PyBytes_FromString("Invalid");
+    }
+
+    switch(sensor_info.nUpperLeftBayerPixel)
+    {
+        case BAYER_PIXEL_RED:
+            first_pixel_color = PyBytes_FromString("Red");
+            break;
+        case BAYER_PIXEL_GREEN:
+            first_pixel_color = PyBytes_FromString("Green");
+            break;
+        case BAYER_PIXEL_BLUE:
+            first_pixel_color = PyBytes_FromString("Blue");
+            break;
+    }
+
+    PyObject * dict = PyDict_New();
+
+    PyDict_SetItemString(dict, "sensor_id", sensor_id);
+    PyDict_SetItemString(dict, "sensor_name", sensor_name);
+    PyDict_SetItemString(dict, "max_width", max_width);
+    PyDict_SetItemString(dict, "max_height", max_height);
+    PyDict_SetItemString(dict, "master_gain", master_gain);
+    PyDict_SetItemString(dict, "red_gain", red_gain);
+    PyDict_SetItemString(dict, "green_gain", green_gain);
+    PyDict_SetItemString(dict, "blue_gain", blue_gain);
+    PyDict_SetItemString(dict, "global_shutter", global_shutter);
+    PyDict_SetItemString(dict, "pixel_size", pixel_size);
+    PyDict_SetItemString(dict, "first_pixel_color", first_pixel_color);
+    PyDict_SetItemString(dict, "color_mode", color_mode);
+
+    Py_DECREF(sensor_id);
+    Py_DECREF(sensor_name);
+    Py_DECREF(max_width);
+    Py_DECREF(max_height);
+    Py_DECREF(master_gain);
+    Py_DECREF(red_gain);
+    Py_DECREF(green_gain);
+    Py_DECREF(blue_gain);
+    Py_DECREF(global_shutter);
+    Py_DECREF(pixel_size);
+    Py_DECREF(first_pixel_color);
+    Py_DECREF(color_mode);
 
     return dict;
 }
@@ -170,6 +260,28 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
         return -1;
     }
 
+    PyObject * sensor_info = camera_sensor_info(self);
+    if (!sensor_info)
+    {
+        return -1;
+    }
+
+    PyObject * width = PyDict_GetItemString(sensor_info, "max_width");
+    if (!width)
+    {
+        PyErr_SetString(PyExc_KeyError, "'max_width'");
+        return -1;
+    }
+
+    PyObject * height = PyDict_GetItemString(sensor_info, "max_height");
+    if (!height)
+    {
+        PyErr_SetString(PyExc_KeyError, "'max_height'");
+        return -1;
+    }
+    self->width = PyLong_AsLong(width);
+    self->height = PyLong_AsLong(height);
+
     Py_DECREF(camera_info);
 
     self->status = (int)READY;
@@ -214,6 +326,9 @@ PyMethodDef camera_methods[] = {
     },
     {"camera_info", (PyCFunction)camera_camera_info, METH_NOARGS,
      "Returns a dictionary containing the information about the camera"
+    },
+    {"sensor_info", (PyCFunction)camera_sensor_info, METH_NOARGS,
+     "Returns a dictionary containing the information about the sensor"
     },
     {NULL} /* Sentinel */
 };
