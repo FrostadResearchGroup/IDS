@@ -10,7 +10,7 @@ if sys.platform == "win32":
         'extra_compile_args': [],
         'define_macros': [('_IDS_EXPORT', None), ('_CRT_SECURE_NO_WARNINGS', None)],
         'library_dirs': ['C:/Program Files/IDS/uEye/Develop/Lib', lib_dir],
-        'libraries': ['ueye_api', 'ueye_tools'],
+        'libraries': ['ueye_api_64', 'ueye_tools_64'],
         'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Develop/include', include_dir]
     }
 else:

@@ -37,11 +37,289 @@ void camera_dealloc(Camera* self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
+void print_error(Camera * self)
+{
+    int errorCode;
+    char * message;
+
+    int returnCode = is_GetError(self->handle, &errorCode, &message);
+    if (returnCode != IS_SUCCESS)
+    {
+        message = "Could not obtain error";
+    }
+    PyErr_Format(IDSError, "uEye SDK error %d %s", returnCode, message);
+}
+
+/*
+ * Obtain the hard coded data in the non-volatile camera memory
+ * @return A Python Dictionary that contains key-value pairs of this data
+ * @note The keys of the dictionary are as follow:
+ *      serial_num   : The serial number of the camera
+ *      manufacturer : The manufacturer of the camera
+ *      date         : The manufacturing date of the camera
+ *      id           : Customizable id of the camera
+ *      type         : Type of the camera
+ */
+PyObject * camera_camera_info(Camera * self)
+{
+    CAMINFO cam_info;
+    PyObject * serial_num;
+    PyObject * manufacturer;
+    PyObject * hw_version;
+    PyObject * manufacture_date;
+    PyObject * select;
+    PyObject * type;
+    PyObject * dict = PyDict_New();
+
+    int returnCode = is_GetCameraInfo(self->handle, &cam_info);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+
+    serial_num = PyBytes_FromString(cam_info.SerNo);
+    manufacturer = PyBytes_FromString(cam_info.ID);
+    hw_version = PyBytes_FromString(cam_info.Version);
+    manufacture_date = PyBytes_FromString(cam_info.Date);
+    select = Py_BuildValue('b', cam_info.Select);
+
+    switch(cam_info.Type)
+    {
+        case IS_CAMERA_TYPE_UEYE_USB_SE:
+            type = PyBytes_FromString("USB uEye SE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB_LE:
+            type = PyBytes_FromString("USB uEye LE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB_ML:
+            type = PyBytes_FromString("USB uEye ML");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_CP:
+            type = PyBytes_FromString("USB 3 uEye CP");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_LE:
+            type = PyBytes_FromString("USB 3 uEye LE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_ML:
+            type = PyBytes_FromString("USB 3 uEye ML");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_XC:
+            type = PyBytes_FromString("USB 3 uEye XC");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_SE:
+            type = PyBytes_FromString("GigE uEye SE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_REP:    
+            type = PyBytes_FromString("GigE uEye PoE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_CP:
+            type = PyBytes_FromString("GigE uEye CP");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_LE:
+            type = PyBytes_FromString("GigE uEye LE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_PMC:
+            type = PyBytes_FromString("Virtual multicast camera");
+            break;
+        default:
+            type = PyBytes_FromString("Unknown Camera type");
+    }
+
+    PyDict_SetItemString(dict, "serial_num", serial_num);
+    PyDict_SetItemString(dict, "manufacturer", manufacturer);
+    PyDict_SetItemString(dict, "hw_version", hw_version);
+    PyDict_SetItemString(dict, "date", manufacture_date);
+    PyDict_SetItemString(dict, "id", select);
+    PyDict_SetItemString(dict, "type", type);
+
+    Py_DECREF(serial_num);
+    Py_DECREF(manufacturer);
+    Py_DECREF(hw_version);
+    Py_DECREF(manufacture_date);
+    Py_DECREF(select);
+    Py_DECREF(type);
+
+    return dict;
+}
+
+/*
+ * Returns the info about the sensor used in the camera
+ * @return Python Dictionary for the sensor info
+ */
+PyObject * camera_sensor_info(Camera * self)
+{
+    SENSORINFO sensor_info;
+   
+    PyObject * sensor_id;
+    PyObject * sensor_name;
+    PyObject * max_width;
+    PyObject * max_height;
+    PyObject * master_gain;
+    PyObject * red_gain;
+    PyObject * green_gain;
+    PyObject * blue_gain;
+    PyObject * global_shutter;
+    PyObject * pixel_size; 
+    PyObject * first_pixel_color;
+    PyObject * color_mode;
+    PyObject * dict = PyDict_New();
+    
+    int returnCode = is_GetSensorInfo(self->handle, &sensor_info);
+    if (returnCode!= IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+
+    sensor_id = Py_BuildValue("h", sensor_info.SensorID);
+    sensor_name = PyBytes_FromString(sensor_info.strSensorName);
+    max_width = Py_BuildValue("i", sensor_info.nMaxWidth);
+    max_height = Py_BuildValue("i", sensor_info.nMaxHeight);
+    master_gain = Py_BuildValue("O", sensor_info.bMasterGain ? Py_True : Py_False);
+    red_gain = Py_BuildValue("O", sensor_info.bRGain ? Py_True : Py_False);
+    green_gain = Py_BuildValue("O", sensor_info.bGGain ? Py_True : Py_False);
+    blue_gain = Py_BuildValue("O", sensor_info.bBGain ? Py_True : Py_False);
+    global_shutter = Py_BuildValue("O", sensor_info.bGlobShutter ? Py_True : Py_False); 
+    pixel_size = Py_BuildValue("d", sensor_info.wPixelSize / 100.0);
+
+    switch(sensor_info.nColorMode)
+    {
+        case IS_COLORMODE_MONOCHROME:
+            color_mode = PyBytes_FromString("Monochrome");
+            break;
+        case IS_COLORMODE_BAYER:
+            color_mode = PyBytes_FromString("Bayer");
+            break;
+        case IS_COLORMODE_CBYCRY:
+            color_mode = PyBytes_FromString("CBYCRY");
+            break;
+        case IS_COLORMODE_JPEG:
+            color_mode = PyBytes_FromString("JPEG");
+            break;
+        default:
+            color_mode = PyBytes_FromString("Invalid");
+    }
+
+    switch(sensor_info.nUpperLeftBayerPixel)
+    {
+        case BAYER_PIXEL_RED:
+            first_pixel_color = PyBytes_FromString("Red");
+            break;
+        case BAYER_PIXEL_GREEN:
+            first_pixel_color = PyBytes_FromString("Green");
+            break;
+        case BAYER_PIXEL_BLUE:
+            first_pixel_color = PyBytes_FromString("Blue");
+            break;
+    }
+
+    PyDict_SetItemString(dict, "sensor_id", sensor_id);
+    PyDict_SetItemString(dict, "sensor_name", sensor_name);
+    PyDict_SetItemString(dict, "max_width", max_width);
+    PyDict_SetItemString(dict, "max_height", max_height);
+    PyDict_SetItemString(dict, "master_gain", master_gain);
+    PyDict_SetItemString(dict, "red_gain", red_gain);
+    PyDict_SetItemString(dict, "green_gain", green_gain);
+    PyDict_SetItemString(dict, "blue_gain", blue_gain);
+    PyDict_SetItemString(dict, "global_shutter", global_shutter);
+    PyDict_SetItemString(dict, "pixel_size", pixel_size);
+    PyDict_SetItemString(dict, "first_pixel_color", first_pixel_color);
+    PyDict_SetItemString(dict, "color_mode", color_mode);
+
+    Py_DECREF(sensor_id);
+    Py_DECREF(sensor_name);
+    Py_DECREF(max_width);
+    Py_DECREF(max_height);
+    Py_DECREF(master_gain);
+    Py_DECREF(red_gain);
+    Py_DECREF(green_gain);
+    Py_DECREF(blue_gain);
+    Py_DECREF(global_shutter);
+    Py_DECREF(pixel_size);
+    Py_DECREF(first_pixel_color);
+    Py_DECREF(color_mode);
+
+    return dict;
+}
+
 /*
  * Initialize the newly created object with a camera
+ * This means the definition of the camera object is:
+ *      def __init__ (self, handle=0)
  */
 int camera_init(Camera * self, PyObject * args, PyObject * kwds)
 {
+    static char *kwlist[] = {"handle", NULL};
+    int returnCode;
+    PyObject * camera_info;
+    PyObject * manufacturer;
+    PyObject * width;
+    PyObject * height;
+    PyObject * sensor_info;
+
+    self->handle = 0;
+    
+    if (!PyArg_ParseTupleAndKeywords(args,kwds, "|i", kwlist, &self->handle))
+    {
+        return -1;
+    }
+
+    returnCode = is_InitCamera(&self->handle, NULL);
+    switch(returnCode)
+    {
+        case IS_SUCCESS: 
+            break;
+        case IS_CANT_OPEN_DEVICE:
+            PyErr_SetString(PyExc_IOError, "Camera not connected.");
+            return -1;
+        default:
+            PyErr_Format(PyExc_IOError, "Unable to open camera (Error %d)", returnCode);
+            return -1;
+    }
+
+    self->status = (int)CONNECTED;
+
+    // Initialize other fields based on the camera info.
+    camera_info = camera_camera_info(self);
+    if (!camera_info)
+    {
+        return -1;
+    }
+
+    manufacturer = PyDict_GetItemString(camera_info, "manufacturer");
+    if(!manufacturer)
+    {
+        PyErr_SetString(PyExc_KeyError, "'manufacturer'");
+        return -1;
+    }
+
+    sensor_info = camera_sensor_info(self);
+    if (!sensor_info)
+    {
+        return -1;
+    }
+
+    width = PyDict_GetItemString(sensor_info, "max_width");
+    if (!width)
+    {
+        PyErr_SetString(PyExc_KeyError, "'max_width'");
+        return -1;
+    }
+
+    height = PyDict_GetItemString(sensor_info, "max_height");
+    if (!height)
+    {
+        PyErr_SetString(PyExc_KeyError, "'max_height'");
+        return -1;
+    }
+    self->width = PyLong_AsLong(width);
+    self->height = PyLong_AsLong(height);
+
+    Py_DECREF(camera_info);
+
+    self->status = (int)READY;
+
     return 0;
 }
 
@@ -79,6 +357,12 @@ PyMemberDef camera_members[] = {
 PyMethodDef camera_methods[] = {
     {"status", (PyCFunction)camera_status, METH_NOARGS,
      "Return the current status of the Camera"
+    },
+    {"camera_info", (PyCFunction)camera_camera_info, METH_NOARGS,
+     "Returns a dictionary containing the information about the camera"
+    },
+    {"sensor_info", (PyCFunction)camera_sensor_info, METH_NOARGS,
+     "Returns a dictionary containing the information about the sensor"
     },
     {NULL} /* Sentinel */
 };
