@@ -38,6 +38,95 @@ void camera_dealloc(Camera* self)
 }
 
 /*
+ * Obtain the hard coded data in the non-volatile camera memory
+ * @return A Python Dictionary that contains key-value pairs of this data
+ * @note The keys of the dictionary are as follow:
+ *      serial_num   : The serial number of the camera
+ *      manufacturer : The manufacturer of the camera
+ *      date         : The manufacturing date of the camera
+ *      select       : Customizable id of the camera
+ *      type         : Type of the camera
+ */
+PyObject * camera_camera_info(Camera * self)
+{
+    CAMINFO cam_info;
+
+    int returnCode = is_GetCameraInfo(self->handle, &cam_info);
+    if (returnCode != IS_SUCCESS)
+    {
+        // handle error
+        return NULL;
+    }
+
+    PyObject * dict = PyDict_New();
+    
+    PyObject * serial_num = PyBytes_FromString(cam_info.SerNo);
+    PyObject * manufacturer = PyBytes_FromString(cam_info.ID);
+    PyObject * hw_version = PyBytes_FromString(cam_info.Version);
+    PyObject * manufacture_date = PyBytes_FromString(cam_info.Date);
+    PyObject * select = Py_BuildValue('b', cam_info.Select);
+    PyObject * type;
+
+    switch(cam_info.Type)
+    {
+        case IS_CAMERA_TYPE_UEYE_USB_SE:
+            type = PyBytes_FromString("USB uEye SE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB_LE:
+            type = PyBytes_FromString("USB uEye LE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB_ML:
+            type = PyBytes_FromString("USB uEye ML");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_CP:
+            type = PyBytes_FromString("USB 3 uEye CP");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_LE:
+            type = PyBytes_FromString("USB 3 uEye LE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_ML:
+            type = PyBytes_FromString("USB 3 uEye ML");
+            break;
+        case IS_CAMERA_TYPE_UEYE_USB3_XC:
+            type = PyBytes_FromString("USB 3 uEye XC");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_SE:
+            type = PyBytes_FromString("GigE uEye SE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_REP:    
+            type = PyBytes_FromString("GigE uEye PoE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_CP:
+            type = PyBytes_FromString("GigE uEye CP");
+            break;
+        case IS_CAMERA_TYPE_UEYE_ETH_LE:
+            type = PyBytes_FromString("GigE uEye LE");
+            break;
+        case IS_CAMERA_TYPE_UEYE_PMC:
+            type = PyBytes_FromString("Virtual multicast camera");
+            break;
+        default:
+            type = PyBytes_FromString("Unknown Camera type");
+    }
+
+    PyDict_SetItemString(dict, "serial_num", serial_num);
+    PyDict_SetItemString(dict, "manufacturer", manufacturer);
+    PyDict_SetItemString(dict, "hw_version", hw_version);
+    PyDict_SetItemString(dict, "date", manufacture_date);
+    PyDict_SetItemString(dict, "select", select);
+    PyDict_SetItemString(dict, "type", type);
+
+    Py_DECREF(serial_num);
+    Py_DECREF(manufacturer);
+    Py_DECREF(hw_version);
+    Py_DECREF(manufacture_date);
+    Py_DECREF(select);
+    Py_DECREF(type);
+
+    return dict;
+}
+
+/*
  * Initialize the newly created object with a camera
  * This means the definition of the camera object is:
  *      def __init__ (self, handle=0)
@@ -67,7 +156,21 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
 
     self->status = (int)CONNECTED;
 
-    // TODO : Initialize other fields based on the camera info.
+    // Initialize other fields based on the camera info.
+    PyObject * camera_info = camera_camera_info(self);
+    if (!camera_info)
+    {
+        return -1;
+    }
+
+    PyObject * manufacturer = PyDict_GetItemString(camera_info, "manufacturer");
+    if(!manufacturer)
+    {
+        PyErr_SetString(PyExc_KeyError, "'manufacturer'");
+        return -1;
+    }
+
+    Py_DECREF(camera_info);
 
     self->status = (int)READY;
 
@@ -108,6 +211,9 @@ PyMemberDef camera_members[] = {
 PyMethodDef camera_methods[] = {
     {"status", (PyCFunction)camera_status, METH_NOARGS,
      "Return the current status of the Camera"
+    },
+    {"camera_info", (PyCFunction)camera_camera_info, METH_NOARGS,
+     "Returns a dictionary containing the information about the camera"
     },
     {NULL} /* Sentinel */
 };
