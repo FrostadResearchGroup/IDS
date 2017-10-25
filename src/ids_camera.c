@@ -37,19 +37,6 @@ void camera_dealloc(Camera* self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-void print_error(Camera * self)
-{
-    int errorCode;
-    char * message;
-
-    int returnCode = is_GetError(self->handle, &errorCode, &message);
-    if (returnCode != IS_SUCCESS)
-    {
-        message = "Could not obtain error";
-    }
-    PyErr_Format(IDSError, "uEye SDK error %d %s", returnCode, message);
-}
-
 /*
  * Obtain the hard coded data in the non-volatile camera memory
  * @return A Python Dictionary that contains key-value pairs of this data
