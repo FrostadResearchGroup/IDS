@@ -3,6 +3,9 @@
 
 PyObject * IDSError;
 
+/**
+  * Returns the number of connected cameras 
+  */
 PyObject * ids_number_cameras(PyObject * self)
 {
     int num_cams, returnCode;
@@ -16,6 +19,9 @@ PyObject * ids_number_cameras(PyObject * self)
     return Py_BuildValue("i", num_cams);
 }
 
+/**
+  * Returns information about all the connected cameras
+  */  
 PyObject * ids_all_cameras_info(PyObject * self)
 {
     int num_cams, returnCode, i;
@@ -61,7 +67,7 @@ PyObject * ids_all_cameras_info(PyObject * self)
         camera_id = Py_BuildValue("I", cameras->uci[i].dwCameraID);
         device_id = Py_BuildValue("I", cameras->uci[i].dwDeviceID);
         sensor_id = Py_BuildValue("I", cameras->uci[i].dwSensorID);
-        in_use = Py_BuildValue("I", cameras->uci[i].dwInUse);
+        in_use = Py_BuildValue("O", cameras->uci[i].dwInUse ? Py_True : Py_False);
         serial_number = Py_BuildValue("s", cameras->uci[i].SerNo);
         model = Py_BuildValue("s", cameras->uci[i].Model);
         status = Py_BuildValue("I", cameras->uci[i].dwStatus);
