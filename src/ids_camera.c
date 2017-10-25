@@ -82,7 +82,7 @@ PyObject * camera_camera_info(Camera * self)
     manufacturer = PyBytes_FromString(cam_info.ID);
     hw_version = PyBytes_FromString(cam_info.Version);
     manufacture_date = PyBytes_FromString(cam_info.Date);
-    select = Py_BuildValue('b', cam_info.Select);
+    select = Py_BuildValue("b", cam_info.Select);
 
     switch(cam_info.Type)
     {
