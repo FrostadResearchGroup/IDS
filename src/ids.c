@@ -3,8 +3,24 @@
 
 PyObject * IDSError;
 
+PyObject * ids_number_cameras(PyObject * self)
+{
+    int num_cams, ret;
+
+    ret = is_GetNumberOfCameras(&num_cams);
+    if (ret != IS_SUCCESS)
+    {
+        PyErr_Format(IDSError, "uEye SDK error %d", ret);
+        return NULL;
+    }
+    return Py_BuildValue("i", num_cams);
+}
+
 PyMethodDef idsMethods[] =
 {
+    {"num_cams", (PyCFunction)ids_number_cameras, METH_NOARGS,
+     "Determines the total number of available cameras\n"
+    },
     {NULL, NULL, 0, NULL} /* sentinel */
 };
 
