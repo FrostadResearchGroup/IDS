@@ -384,7 +384,7 @@ PyTypeObject ids_CameraType = {
     0,                         /* tp_iternext */
     camera_methods,            /* tp_methods */
     camera_members,            /* tp_members */
-    0,                         /* tp_getset */
+    camera_properties,         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */

@@ -47,6 +47,7 @@ extern PyMethodDef idsMethods[];
  */
 extern PyTypeObject ids_CameraType;
 extern PyMethodDef camera_methods[];
+extern PyGetSetDef camera_properties[];
 
 void print_error(Camera * self);
 
