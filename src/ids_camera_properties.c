@@ -221,10 +221,44 @@ PyObject * camera_get_blue_gain(Camera * self, void * closure)
     return get_gain(self, IS_GET_BLUE_GAIN);
 }
 
+int camera_set_frame_rate(Camera * self, PyObject * value, void * closure)
+{
+    int returnCode;
+    double setVal;
+    double wantedVal;
+
+    wantedVal = PyFloat_AsDouble(value);
+    returnCode = is_SetFrameRate(self->handle, wantedVal, &setVal);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+    return 0;
+}
+
+PyObject * camera_get_frame_rate(Camera * self, void * closure)
+{
+    int returnCode;
+    double val;
+    PyObject * value;
+
+    returnCode = is_SetFrameRate(self->handle, IS_GET_FRAMERATE, &val);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+    
+    value = PyFloat_FromDouble(val);
+    return value;
+}
+
 PyGetSetDef camera_properties[] = {
     {"master_gain", (getter)camera_get_master_gain, (setter)camera_set_master_gain, "Master Gain", NULL},
     {"red_gain", (getter)camera_get_red_gain, (setter)camera_set_red_gain, "Red Gain", NULL},
     {"blue_gain", (getter)camera_get_blue_gain, (setter)camera_set_blue_gain, "Blue Gain", NULL},
     {"green_gain", (getter)camera_get_green_gain, (setter)camera_set_green_gain, "Green Gain", NULL},
+    {"frame_rate", (getter)camera_get_frame_rate, (setter)camera_set_frame_rate, "Frame Rate", NULL},
     {NULL} /* sentinel */
 };
