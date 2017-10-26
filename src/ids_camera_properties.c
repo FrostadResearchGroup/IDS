@@ -1,0 +1,230 @@
+#include <uEye.h>
+#include "ids.h"
+#include "structmember.h"
+
+/**
+  * Common wrapper around is_SetHardwareGain used to set master, red, green and blue gain
+  * @arg self Pointer to the Camera object
+  * @arg master_gain The new value of the master gain
+  * @arg red_gain The new value of red gain
+  * @arg green_gain The new value of green gain
+  * @arg blue_gain The new value of blue gain
+  *
+  * @return The returnCode of the function call is_SetHardwareGain produced by IDS library
+  */ 
+int set_gain(Camera * self, int master_gain, int red_gain, int green_gain, int blue_gain)
+{
+    return is_SetHardwareGain(self->handle, master_gain, red_gain, green_gain, blue_gain);
+}
+
+/**
+  * Commone wrapper around is_SetHardwareGain used to get master/red/green/blue gain
+  * @arg self Pointer to the camera object
+  * @arg command The command specifying which gain to get
+  *
+  * @note For more information please look at https://www.ids-imaging.us/manuals/uEye_SDK/EN/uEye_Manual_4.90/index.html?is_initcamera.html
+  *
+  * @return The gain value as a Python Object
+  */ 
+PyObject * get_gain(Camera * self, int command)
+{
+    int val = is_SetHardwareGain(self->handle, command, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER, IS_IGNORE_PARAMETER);
+
+    return Py_BuildValue("i", val);
+}
+
+int camera_set_master_gain(Camera * self, PyObject * value, void * closure)
+{
+    int master_gain;
+    char * converted_val;
+    int red_gain = IS_IGNORE_PARAMETER;
+    int blue_gain = IS_IGNORE_PARAMETER;
+    int green_gain = IS_IGNORE_PARAMETER;
+    int returnCode;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_IOError, "Master gain can't be null");
+        return -1;
+    }
+
+    // Check if the argument passed in was "auto"
+    if (check_is_string(value))
+    {
+        converted_val = get_as_string(value);
+        if( converted_val != "auto")
+        {
+            PyErr_SetString(PyExc_IOError, "Invalid argument");
+            return -1;
+        }
+        master_gain = IS_SET_ENABLE_AUTO_GAIN;
+    }
+    else if(PyLong_Check(value))
+    {
+        master_gain = (int)PyLong_AsLong(value);
+        if (master_gain == -1 || master_gain < 0 || master_gain > 100)
+        {
+            PyErr_SetString(PyExc_IOError, "Invalid argument");
+            return -1;
+        }
+    }
+    else
+    {
+        PyErr_SetString(PyExc_IOError, "Invalid argument type");
+        return -1;
+    }
+
+    returnCode = set_gain(self, master_gain, red_gain, green_gain, blue_gain);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
+    return 0;
+}
+
+PyObject * camera_get_master_gain(Camera * self, void * closure)
+{
+    return get_gain(self, IS_GET_MASTER_GAIN);
+}
+
+int camera_set_red_gain(Camera * self, PyObject * value, void * closure)
+{
+    int master_gain = IS_IGNORE_PARAMETER;
+    int red_gain = IS_IGNORE_PARAMETER;
+    int blue_gain = IS_IGNORE_PARAMETER;
+    int green_gain = IS_IGNORE_PARAMETER;
+    int returnCode;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_IOError, "Blue gain can't be null");
+        return -1;
+    }
+
+    if(PyLong_Check(value))
+    {
+        red_gain = (int)PyLong_AsLong(value);
+        if (red_gain == -1 || red_gain < 0 || red_gain > 100)
+        {
+            PyErr_SetString(PyExc_IOError, "Invalid argument");
+            return -1;
+        }
+    }
+    else
+    {
+        PyErr_SetString(PyExc_IOError, "Invalid argument type");
+        return -1;
+    }
+
+    returnCode = set_gain(self, master_gain, red_gain, green_gain, blue_gain);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
+    return 0;
+}
+
+PyObject * camera_get_red_gain(Camera * self, void * closure)
+{
+    return get_gain(self, IS_GET_RED_GAIN);
+}
+
+int camera_set_green_gain(Camera * self, PyObject * value, void * closure)
+{
+    int master_gain = IS_IGNORE_PARAMETER;
+    int red_gain = IS_IGNORE_PARAMETER;
+    int blue_gain = IS_IGNORE_PARAMETER;
+    int green_gain = IS_IGNORE_PARAMETER;
+    int returnCode;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_IOError, "Green gain can't be null");
+        return -1;
+    }
+
+    if(PyLong_Check(value))
+    {
+        green_gain = (int)PyLong_AsLong(value);
+        if (green_gain == -1 || green_gain < 0 || green_gain > 100)
+        {
+            PyErr_SetString(PyExc_IOError, "Invalid argument");
+            return -1;
+        }
+    }
+    else
+    {
+        PyErr_SetString(PyExc_IOError, "Invalid argument type");
+        return -1;
+    }
+
+    returnCode = set_gain(self, master_gain, red_gain, green_gain, blue_gain);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
+    return 0;
+}
+
+PyObject * camera_get_green_gain(Camera * self, void * closure)
+{
+    return get_gain(self, IS_GET_GREEN_GAIN);
+}
+
+int camera_set_blue_gain(Camera * self, PyObject * value, void * closure)
+{
+    int master_gain = IS_IGNORE_PARAMETER;
+    int red_gain = IS_IGNORE_PARAMETER;
+    int blue_gain = IS_IGNORE_PARAMETER;
+    int green_gain = IS_IGNORE_PARAMETER;
+    int returnCode;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_IOError, "Blue gain can't be null");
+        return -1;
+    }
+
+    if(PyLong_Check(value))
+    {
+        blue_gain = (int)PyLong_AsLong(value);
+        if (blue_gain == -1 || blue_gain < 0 || blue_gain > 100)
+        {
+            PyErr_SetString(PyExc_IOError, "Invalid argument");
+            return -1;
+        }
+    }
+    else
+    {
+        PyErr_SetString(PyExc_IOError, "Invalid argument type");
+        return -1;
+    }
+
+    returnCode = set_gain(self, master_gain, red_gain, green_gain, blue_gain);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
+    return 0;
+}
+
+PyObject * camera_get_blue_gain(Camera * self, void * closure)
+{
+    return get_gain(self, IS_GET_BLUE_GAIN);
+}
+
+PyGetSetDef camera_properties[] = {
+    {"master_gain", (getter)camera_get_master_gain, (setter)camera_set_master_gain, "Master Gain", NULL},
+    {"red_gain", (getter)camera_get_red_gain, (setter)camera_set_red_gain, "Red Gain", NULL},
+    {"blue_gain", (getter)camera_get_blue_gain, (setter)camera_set_blue_gain, "Blue Gain", NULL},
+    {"green_gain", (getter)camera_get_green_gain, (setter)camera_set_green_gain, "Green Gain", NULL},
+    {NULL} /* sentinel */
+};
