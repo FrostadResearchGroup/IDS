@@ -1,6 +1,7 @@
 #include <uEye.h>
 #include "ids.h"
 #include "structmember.h"
+#include <string.h>
 
 /**
   * Common wrapper around is_SetHardwareGain used to set master, red, green and blue gain
@@ -52,7 +53,7 @@ int camera_set_master_gain(Camera * self, PyObject * value, void * closure)
     if (check_is_string(value))
     {
         converted_val = get_as_string(value);
-        if( converted_val != "auto")
+        if( strcmp(converted_val, "auto") != 0 )
         {
             PyErr_SetString(PyExc_IOError, "Invalid argument");
             return -1;
