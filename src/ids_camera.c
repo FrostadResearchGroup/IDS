@@ -232,13 +232,12 @@ PyObject * camera_sensor_info(Camera * self)
     return dict;
 }
 
-int camera_save_settings(Camera * self, PyObject * args, PyObject * kwds)
+int camera_save_settings(Camera * self, PyObject * args)
 {
-    static char * kwlist[] = {"filename", NULL};
     int returnCode;
     char * filename;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, filename))
+    if (!PyArg_ParseTupleAndKeywords(args,"s", &filename))
     {
         return -1;
     }
@@ -252,12 +251,11 @@ int camera_save_settings(Camera * self, PyObject * args, PyObject * kwds)
     return 0;
 }
 
-int camera_load_settings(Camera * self, PyObject * args, PyObject * kwds)
+int camera_load_settings(Camera * self, PyObject * args)
 {
-    static char * kwlist[] = {"filename", NULL};
     int returnCode;
     char * filename;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, filename))
+    if (!PyArg_ParseTupleAndKeywords(args, "s", &filename))
     {
         return -1;
     }
