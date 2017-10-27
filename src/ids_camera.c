@@ -232,6 +232,50 @@ PyObject * camera_sensor_info(Camera * self)
     return dict;
 }
 
+int camera_save_settings(Camera * self, PyObject * args, PyObject * kwds)
+{
+    static char * kwlist[] = {"filename", NULL};
+    int returnCode;
+    char * filename;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, filename))
+    {
+        return -1;
+    }
+
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, filename, NULL);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(returnCode);
+        return -1;
+    }
+    return 0;
+}
+
+int camera_load_settings(Camera * self, PyObject * args, PyObject * kwds)
+{
+    static char * kwlist[] = {"filename", NULL};
+    int returnCode;
+    char * filename;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, filename))
+    {
+        return -1;
+    }
+
+    if (filename == NULL)
+    {
+        return -1;
+    }
+    
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, filename, NULL);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(returnCode);
+        return -1;
+    }
+    return 0;
+}
+
 /*
  * Initialize the newly created object with a camera
  * This means the definition of the camera object is:
@@ -375,6 +419,12 @@ PyMethodDef camera_methods[] = {
     },
     {"default_gain", (PyCFunction) camera_default_gain, METH_NOARGS,
      "Returns a dictionary containing the default gain values"
+    },
+    {"save_settings", (PyCFunction) camera_save_settings, METH_VARARGS,
+     "Save camera settings to a file"
+    },
+    {"load_settings", (PyCFunction) camera_load_settings, METH_VARARGS,
+     "Load camera settings from a file"
     },
     {NULL} /* Sentinel */
 };
