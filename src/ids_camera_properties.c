@@ -60,18 +60,10 @@ int camera_set_master_gain(Camera * self, PyObject * value, void * closure)
         }
         master_gain = IS_SET_ENABLE_AUTO_GAIN;
     }
-    else if(PyLong_Check(value))
+    master_gain = (int)PyLong_AsLong(value);
+    if (master_gain == -1 || master_gain < 0 || master_gain > 100)
     {
-        master_gain = (int)PyLong_AsLong(value);
-        if (master_gain == -1 || master_gain < 0 || master_gain > 100)
-        {
-            PyErr_SetString(PyExc_IOError, "Invalid argument");
-            return -1;
-        }
-    }
-    else
-    {
-        PyErr_SetString(PyExc_IOError, "Invalid argument type");
+        PyErr_SetString(PyExc_IOError, "Invalid argument");
         return -1;
     }
 
@@ -104,18 +96,10 @@ int camera_set_red_gain(Camera * self, PyObject * value, void * closure)
         return -1;
     }
 
-    if(PyLong_Check(value))
+    red_gain = (int)PyLong_AsLong(value);
+    if (red_gain == -1 || red_gain < 0 || red_gain > 100)
     {
-        red_gain = (int)PyLong_AsLong(value);
-        if (red_gain == -1 || red_gain < 0 || red_gain > 100)
-        {
-            PyErr_SetString(PyExc_IOError, "Invalid argument");
-            return -1;
-        }
-    }
-    else
-    {
-        PyErr_SetString(PyExc_IOError, "Invalid argument type");
+        PyErr_SetString(PyExc_IOError, "Invalid argument");
         return -1;
     }
 
@@ -148,19 +132,11 @@ int camera_set_green_gain(Camera * self, PyObject * value, void * closure)
         return -1;
     }
 
-    if(PyLong_Check(value))
+    green_gain = (int)PyLong_AsLong(value);
+    if (green_gain == -1 || green_gain < 0 || green_gain > 100)
     {
-        green_gain = (int)PyLong_AsLong(value);
-        if (green_gain == -1 || green_gain < 0 || green_gain > 100)
-        {
-            PyErr_SetString(PyExc_IOError, "Invalid argument");
-            return -1;
-        }
-    }
-    else
-    {
-        PyErr_SetString(PyExc_IOError, "Invalid argument type");
-        return -1;
+         PyErr_SetString(PyExc_IOError, "Invalid argument");
+         return -1;
     }
 
     returnCode = set_gain(self, master_gain, red_gain, green_gain, blue_gain);
@@ -192,18 +168,10 @@ int camera_set_blue_gain(Camera * self, PyObject * value, void * closure)
         return -1;
     }
 
-    if(PyLong_Check(value))
+    blue_gain = (int)PyLong_AsLong(value);
+    if (blue_gain == -1 || blue_gain < 0 || blue_gain > 100)
     {
-        blue_gain = (int)PyLong_AsLong(value);
-        if (blue_gain == -1 || blue_gain < 0 || blue_gain > 100)
-        {
-            PyErr_SetString(PyExc_IOError, "Invalid argument");
-            return -1;
-        }
-    }
-    else
-    {
-        PyErr_SetString(PyExc_IOError, "Invalid argument type");
+        PyErr_SetString(PyExc_IOError, "Invalid argument");
         return -1;
     }
 
