@@ -237,7 +237,7 @@ PyObject * camera_save_settings(Camera * self, PyObject * args)
     int returnCode;
     char * filename;
 
-    if (!PyArg_ParseTuple(args,"s", &filename))
+    if (!PyArg_ParseTuple(args,"|s", &filename))
     {
         return NULL;
     }
@@ -255,7 +255,7 @@ PyObject * camera_load_settings(Camera * self, PyObject * args)
 {
     int returnCode;
     char * filename;
-    if (!PyArg_ParseTuple(args, "s", &filename))
+    if (!PyArg_ParseTuple(args, "|s", &filename))
     {
         return NULL;
     }
