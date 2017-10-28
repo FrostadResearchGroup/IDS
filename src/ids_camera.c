@@ -232,46 +232,46 @@ PyObject * camera_sensor_info(Camera * self)
     return dict;
 }
 
-int camera_save_settings(Camera * self, PyObject * args)
+PyObject * camera_save_settings(Camera * self, PyObject * args)
 {
     int returnCode;
     char * filename;
 
     if (!PyArg_ParseTuple(args,"s", &filename))
     {
-        return -1;
+        return NULL;
     }
 
     returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, filename, NULL);
     if (returnCode != IS_SUCCESS)
     {
         print_error(returnCode);
-        return -1;
+        return NULL;
     }
-    return 0;
+    Py_RETURN_NONE;
 }
 
-int camera_load_settings(Camera * self, PyObject * args)
+PyObject * camera_load_settings(Camera * self, PyObject * args)
 {
     int returnCode;
     char * filename;
     if (!PyArg_ParseTuple(args, "s", &filename))
     {
-        return -1;
+        return NULL;
     }
 
     if (filename == NULL)
     {
-        return -1;
+        return NULL;
     }
     
     returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, filename, NULL);
     if (returnCode != IS_SUCCESS)
     {
         print_error(returnCode);
-        return -1;
+        return NULL;
     }
-    return 0;
+    Py_RETURN_NONE;
 }
 
 /*
