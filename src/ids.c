@@ -4,6 +4,22 @@
 PyObject * IDSError;
 
 /**
+  * General function to print errors that may occur whilst using the SDK
+  */  
+void print_error(Camera * self)
+{
+    int errorCode;
+    char * message;
+
+    int returnCode = is_GetError(self->handle, &errorCode, &message);
+    if (returnCode != IS_SUCCESS)
+    {
+        message = "Could not obtain error";
+    }
+    PyErr_Format(IDSError, "uEye SDK error %d %s", returnCode, message);
+}
+
+/**
   * Returns the number of connected cameras 
   */
 PyObject * ids_number_cameras(PyObject * self)

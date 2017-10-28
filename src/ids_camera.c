@@ -2,6 +2,8 @@
 #include "ids.h"
 #include "structmember.h"
 
+extern PyObject * get_gain(Camera * self, int command);
+
 /*
  * Initialize the attributes of the newly created Camera object to 0
  */
@@ -35,19 +37,6 @@ PyObject* camera_new
 void camera_dealloc(Camera* self)
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
-}
-
-void print_error(Camera * self)
-{
-    int errorCode;
-    char * message;
-
-    int returnCode = is_GetError(self->handle, &errorCode, &message);
-    if (returnCode != IS_SUCCESS)
-    {
-        message = "Could not obtain error";
-    }
-    PyErr_Format(IDSError, "uEye SDK error %d %s", returnCode, message);
 }
 
 /*
@@ -243,6 +232,48 @@ PyObject * camera_sensor_info(Camera * self)
     return dict;
 }
 
+PyObject * camera_save_settings(Camera * self, PyObject * args)
+{
+    int returnCode;
+    char * filename;
+
+    if (!PyArg_ParseTuple(args,"s", &filename))
+    {
+        return NULL;
+    }
+
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, filename, NULL);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(returnCode);
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
+PyObject * camera_load_settings(Camera * self, PyObject * args)
+{
+    int returnCode;
+    char * filename;
+    if (!PyArg_ParseTuple(args, "s", &filename))
+    {
+        return NULL;
+    }
+
+    if (filename == NULL)
+    {
+        return NULL;
+    }
+    
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, filename, NULL);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(returnCode);
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
 /*
  * Initialize the newly created object with a camera
  * This means the definition of the camera object is:
@@ -323,6 +354,26 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
     return 0;
 }
 
+PyObject * camera_default_gain(Camera * self)
+{
+    PyObject * default_master_gain;
+    PyObject * default_red_gain;
+    PyObject * default_green_gain;
+    PyObject * default_blue_gain;
+    PyObject * dict = PyDict_New();
+
+    default_master_gain = get_gain(self, IS_GET_DEFAULT_MASTER);
+    default_red_gain = get_gain(self, IS_GET_DEFAULT_RED);
+    default_green_gain = get_gain(self, IS_GET_DEFAULT_GREEN);
+    default_blue_gain = get_gain(self, IS_GET_DEFAULT_BLUE);
+
+    PyDict_SetItemString(dict, "master", default_master_gain);
+    PyDict_SetItemString(dict, "red", default_red_gain);
+    PyDict_SetItemString(dict, "blue", default_blue_gain);
+    PyDict_SetItemString(dict, "green", default_green_gain);
+    return dict;
+}
+
 /*
  * Returns the current status of the camera in string format
  */
@@ -364,6 +415,15 @@ PyMethodDef camera_methods[] = {
     {"sensor_info", (PyCFunction)camera_sensor_info, METH_NOARGS,
      "Returns a dictionary containing the information about the sensor"
     },
+    {"default_gain", (PyCFunction) camera_default_gain, METH_NOARGS,
+     "Returns a dictionary containing the default gain values"
+    },
+    {"save_settings", (PyCFunction) camera_save_settings, METH_VARARGS,
+     "Save camera settings to a file"
+    },
+    {"load_settings", (PyCFunction) camera_load_settings, METH_VARARGS,
+     "Load camera settings from a file"
+    },
     {NULL} /* Sentinel */
 };
 
@@ -397,7 +457,7 @@ PyTypeObject ids_CameraType = {
     0,                         /* tp_iternext */
     camera_methods,            /* tp_methods */
     camera_members,            /* tp_members */
-    0,                         /* tp_getset */
+    camera_properties,         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */

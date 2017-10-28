@@ -6,6 +6,10 @@
 #include <Python.h>
 
 #if PY_MAJOR_VERSION >= 3
+#define IS_PY3
+#endif
+
+#ifdef IS_PY3
 #include <stdint.h>
 #else
 #include "stdint.h"
@@ -47,10 +51,15 @@ extern PyMethodDef idsMethods[];
  */
 extern PyTypeObject ids_CameraType;
 extern PyMethodDef camera_methods[];
+extern PyGetSetDef camera_properties[];
 
 void print_error(Camera * self);
 
 /* IDS Exception Objects */
 extern PyObject * IDSError;
+
+/* Wrapper functions for converting Python Objects to string and supporting both Python 2 and Python 3 */
+extern int check_is_string(PyObject * value);
+extern char * get_as_string(PyObject * value);
 
 #endif
