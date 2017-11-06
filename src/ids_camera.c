@@ -4,6 +4,7 @@
 #include <string.h>
 
 extern PyObject * get_gain(Camera * self, int command);
+extern PyObject * camera_get_image(Camera * self);
 
 /*
  * Initialize the attributes of the newly created Camera object to 0
@@ -506,6 +507,9 @@ PyMethodDef camera_methods[] = {
     {"get_aoi", (PyCFunction) camera_get_aoi, METH_VARARGS,
      "Get Area of Interest"
     },
+    {"get_image", (PyCFunction) camera_get_image, METH_NOARGS,
+     "Get the next image waiting in queue"
+    }
     {NULL} /* Sentinel */
 };
 
