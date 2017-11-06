@@ -2,6 +2,7 @@
 #include "ids.h"
 #include "structmember.h"
 #include <string.h>
+#include <wchar.h>
 
 extern PyObject * get_gain(Camera * self, int command);
 extern PyObject * camera_get_image(Camera * self);
@@ -242,7 +243,7 @@ PyObject * camera_sensor_info(Camera * self)
 PyObject * camera_save_settings(Camera * self, PyObject * args)
 {
     int returnCode;
-    char * filename;
+    wchar_t * filename;
     int len;
 
     if (!PyArg_ParseTuple(args,"|s", &filename))
@@ -252,7 +253,7 @@ PyObject * camera_save_settings(Camera * self, PyObject * args)
 
     len = strlen(filename) + 1;
 
-    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, (void *)filename, len);
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, (void *)filename, NULL);
     if (returnCode != IS_SUCCESS)
     {
         print_error(self);
@@ -264,7 +265,7 @@ PyObject * camera_save_settings(Camera * self, PyObject * args)
 PyObject * camera_load_settings(Camera * self, PyObject * args)
 {
     int returnCode;
-    char * filename;
+    wchar_t * filename;
     int len;
     if (!PyArg_ParseTuple(args, "|s", &filename))
     {
@@ -278,7 +279,7 @@ PyObject * camera_load_settings(Camera * self, PyObject * args)
 
     len = strlen(filename) + 1;
 
-    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, (void *)filename, len);
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, (void *)filename, NULL);
     if (returnCode != IS_SUCCESS)
     {
         print_error(self);
@@ -509,7 +510,7 @@ PyMethodDef camera_methods[] = {
     },
     {"get_image", (PyCFunction) camera_get_image, METH_NOARGS,
      "Get the next image waiting in queue"
-    }
+    },
     {NULL} /* Sentinel */
 };
 

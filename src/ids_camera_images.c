@@ -3,7 +3,7 @@
 
 #define IMAGE_TIMEOUT 1000
 
-int camera_wait_for_image(Camera * self, char ** ppBuffer, INT * pImgID, int * pRetVal)
+int camera_wait_for_image(Camera * self, char ** ppBuffer, INT * pImgID)
 {
     int retCode;
 
@@ -19,7 +19,7 @@ int camera_wait_for_image(Camera * self, char ** ppBuffer, INT * pImgID, int * p
 int camera_unlock_image_queue_buffer(Camera * self, INT imgID, char * pBuffer)
 {
     int retCode;
-    retCode = is_UnlockSeqBuf(self->handle, nMemID, mem); 
+    retCode = is_UnlockSeqBuf(self->handle, imgID, pBuffer); 
     if (retCode != IS_SUCCESS)
     {
         print_error(self);
@@ -74,10 +74,10 @@ PyObject * camera_get_image(Camera * self)
         return NULL;
     }
 
-    returnObject = Py_BuildValue("(OO)", img, image_info);
+    returnObj = Py_BuildValue("(OO)", img, image_info);
 
     Py_DECREF(img);
     Py_DECREF(image_info);
    
-    return returnObject;
+    return returnObj;
 }
