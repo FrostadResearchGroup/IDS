@@ -320,7 +320,7 @@ int camera_set_white_balance(Camera * self, PyObject * value, void * closure)
         return -1;
     }
 
-    if (PyLong_Check(value))
+    if (PyInt_Check(value))
     {
         nType = (UINT)(PyLong_AsLong(value));
         returnCode = is_AutoParameter(self->handle,IS_AWB_CMD_SET_TYPE, (void*)&nType, sizeof(nType));
@@ -344,7 +344,7 @@ PyObject * camera_get_white_balance(Camera * self, void * closure)
     int returnCode;
     UINT nType = 0;
 
-    returnCode = is_AutoParameter(self->handle, IS_AWB_CMD_GET_TYPE, (void*)nType, sizeof(nType));
+    returnCode = is_AutoParameter(self->handle, IS_AWB_CMD_GET_TYPE, (void*)&nType, sizeof(nType));
     if (returnCode != IS_SUCCESS)
     {
         print_error(self);

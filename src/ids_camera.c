@@ -318,7 +318,7 @@ PyObject * camera_get_aoi(Camera * self)
     return dict;
 }
 
-int camera_set_aoi(Camera * self, PyObject * args, PyObject * kwds)
+PyObject * camera_set_aoi(Camera * self, PyObject * args, PyObject * kwds)
 {
     static char *kwlist[] = {"x", "y", "width", "height", NULL};
     int returnCode;
@@ -327,7 +327,8 @@ int camera_set_aoi(Camera * self, PyObject * args, PyObject * kwds)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "iiii", kwlist, &x, &y, &width, &height))
     {
-        return -1;
+		PyErr_SetString(PyExc_TypeError, "Parsing didn't work");
+        return NULL;
     }
 
     rectAOI.s32X = x;
@@ -339,10 +340,10 @@ int camera_set_aoi(Camera * self, PyObject * args, PyObject * kwds)
     if (returnCode != IS_SUCCESS)
     {
         print_error(self);
-        return -1;
+        return NULL;
     }
 
-    return 0;
+    Py_RETURN_NONE;
 }
 
 /*
