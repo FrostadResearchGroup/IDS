@@ -37,6 +37,11 @@ PyObject* camera_new
  */
 void camera_dealloc(Camera* self)
 {
+    if (self->status == READY)
+    {
+        is_ExitImageQueue(self->handle);
+    }
+    is_ExitCamera(self->handle);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -410,6 +415,13 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
     }
     self->width = PyLong_AsLong(width);
     self->height = PyLong_AsLong(height);
+
+    returnCode = is_InitImageQueue(self->handle, 0);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
 
     Py_DECREF(camera_info);
 
