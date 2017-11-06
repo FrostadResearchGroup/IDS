@@ -1,6 +1,7 @@
 #include <uEye.h>
 #include "ids.h"
 #include "structmember.h"
+#include <string.h>
 
 extern PyObject * get_gain(Camera * self, int command);
 
@@ -236,16 +237,19 @@ PyObject * camera_save_settings(Camera * self, PyObject * args)
 {
     int returnCode;
     char * filename;
+    int len;
 
     if (!PyArg_ParseTuple(args,"|s", &filename))
     {
         return NULL;
     }
 
-    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, filename, NULL);
+    len = strlen(filename) + 1;
+
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, (void *)filename, len);
     if (returnCode != IS_SUCCESS)
     {
-        print_error(returnCode);
+        print_error(self);
         return NULL;
     }
     Py_RETURN_NONE;
@@ -255,6 +259,7 @@ PyObject * camera_load_settings(Camera * self, PyObject * args)
 {
     int returnCode;
     char * filename;
+    int len;
     if (!PyArg_ParseTuple(args, "|s", &filename))
     {
         return NULL;
@@ -264,11 +269,13 @@ PyObject * camera_load_settings(Camera * self, PyObject * args)
     {
         return NULL;
     }
-    
-    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, filename, NULL);
+
+    len = strlen(filename) + 1;
+
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, (void *)filename, len);
     if (returnCode != IS_SUCCESS)
     {
-        print_error(returnCode);
+        print_error(self);
         return NULL;
     }
     Py_RETURN_NONE;
