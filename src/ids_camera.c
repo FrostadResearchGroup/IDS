@@ -281,6 +281,63 @@ PyObject * camera_load_settings(Camera * self, PyObject * args)
     Py_RETURN_NONE;
 }
 
+PyObject * camera_get_aoi(Camera * self)
+{
+    int returnCode;
+    PyObject * x;
+    PyObject * y;
+    PyObject * height;
+    PyObject * width;
+    PyObject * dict = PyDict_New();
+
+    IS_RECT rectAOI;
+    returnCode = is_AOI(self->handle, IS_AOI_IMAGE_GET_AOI, (void *)&rectAOI, sizeof(rectAOI));
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+
+    x = Py_BuildValue("i", rectAOI.s32X);
+    y = Py_BuildValue("i", rectAOI.s32Y);
+    width = Py_BuildValue("i", rectAOI.s32Width);
+    height = Py_BuildValue("i", rectAOI.s32Height);
+
+    PyDict_SetItemString(dict, "x", x);
+    PyDict_SetItemString(dict, "y", y);
+    PyDict_SetItemString(dict, "height", height);
+    PyDict_SetItemString(dict, "width", width);
+
+    return dict;
+}
+
+int camera_set_aoi(Camera * self, PyObject * args, PyObject * kwds)
+{
+    static char *kwlist[] = {"x", "y", "width", "height", NULL};
+    int returnCode;
+    int x, y, width, height;
+    IS_RECT rectAOI;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iiii", kwlist, &x, &y, &width, &height))
+    {
+        return -1;
+    }
+
+    rectAOI.s32X = x;
+    rectAOI.s32Y = y;
+    rectAOI.s32Width = width;
+    rectAOI.s32Height = height;
+
+    returnCode = is_AOI(self->handle, IS_AOI_IMAGE_SET_AOI, (void * )&rectAOI, sizeof(rectAOI));
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
+    return 0;
+}
+
 /*
  * Initialize the newly created object with a camera
  * This means the definition of the camera object is:
@@ -430,6 +487,12 @@ PyMethodDef camera_methods[] = {
     },
     {"load_settings", (PyCFunction) camera_load_settings, METH_VARARGS,
      "Load camera settings from a file"
+    },
+    {"set_aoi", (PyCFunction) camera_set_aoi, METH_VARARGS | METH_KEYWORDS,
+     "Set Area of Interest"
+    },
+    {"get_aoi", (PyCFunction) camera_get_aoi, METH_VARARGS,
+     "Get Area of Interest"
     },
     {NULL} /* Sentinel */
 };
