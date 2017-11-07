@@ -147,6 +147,9 @@ PyMODINIT_FUNC PyInit_ids(void)
     ids_CameraType.tp_new = PyType_GenericNew;
     if (PyType_Ready(&ids_CameraType) < 0)
         return NULL;
+    ids_VideoType.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&ids_VideoType) < 0)
+        return NULL;
 
     m = PyModule_Create(&idsModule);
     if (m == NULL)
@@ -163,7 +166,9 @@ PyMODINIT_FUNC PyInit_ids(void)
    
     /* IDS Objects */
     Py_INCREF(&ids_CameraType);
+    Py_INCREF(&ids_VideoType);
     PyModule_AddObject(m, "Camera", (PyObject *)(&ids_CameraType));
+    PyModule_AddObject(m, "Video", (PyObject *)(&ids_VideoType));
     return m;
 }
 #else
@@ -173,6 +178,10 @@ PyMODINIT_FUNC initids(void)
 
     ids_CameraType.tp_new = PyType_GenericNew;
     if (PyType_Ready(&ids_CameraType) < 0)
+        return NULL;
+
+    ids_VideoType.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&ids_VideoType) < 0)
         return NULL;
 
     m = Py_InitModule("ids", idsMethods);
@@ -186,7 +195,9 @@ PyMODINIT_FUNC initids(void)
    
     /* IDS Objects */
     Py_INCREF(&ids_CameraType);
+    Py_INCREF(&ids_VideoType);
     PyModule_AddObject(m, "Camera", (PyObject *)(&ids_CameraType));
+    PyModule_AddObject(m, "Video", (PyObject *)(&ids_VideoType));
 }
 #endif
 

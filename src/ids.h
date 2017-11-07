@@ -31,6 +31,15 @@ typedef struct
 
 } Camera;
 
+/**
+  * Struct that defines the Video class
+  */
+typedef struct
+{
+    PyObject_HEAD
+    int         videoID;
+} Video;
+
 /*
  * Enum defining the current status of the camera
  */
@@ -52,6 +61,12 @@ extern PyMethodDef idsMethods[];
 extern PyTypeObject ids_CameraType;
 extern PyMethodDef camera_methods[];
 extern PyGetSetDef camera_properties[];
+
+/**
+  * Data Structures for the Video Object
+  */ 
+extern PyTypeObject ids_VideoType;
+extern PyMethodDef video_methods[];
 
 void print_error(Camera * self);
 
