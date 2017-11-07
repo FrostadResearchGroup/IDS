@@ -320,7 +320,11 @@ int camera_set_white_balance(Camera * self, PyObject * value, void * closure)
         return -1;
     }
 
+#ifdef IS_PY3
+    if (PyLong_Check(value))
+#else
     if (PyInt_Check(value))
+#endif
     {
         nType = (UINT)(PyLong_AsLong(value));
         returnCode = is_AutoParameter(self->handle,IS_AWB_CMD_SET_TYPE, (void*)&nType, sizeof(nType));
