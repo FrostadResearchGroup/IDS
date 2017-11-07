@@ -228,6 +228,11 @@ int camera_set_pixel_clock(Camera * self, PyObject * value, void * closure)
     int returnCode;
     UINT nPixelClock;
 
+    if (value == NULL)
+    {
+        return -1;
+    }
+
     if (PyLong_Check(value))
     {
         nPixelClock = (UINT)PyLong_AsLong(value);
@@ -261,6 +266,93 @@ PyObject * camera_get_pixel_clock(Camera * self, void * closure)
     return Py_BuildValue("i", nPixelClock);
 }
 
+int camera_set_exposure(Camera * self, PyObject * value, void * clousre)
+{
+    int returnCode;
+    double exposure_time;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_TypeError, "Exposure can not be set to NULL");
+        return -1;
+    }
+
+    if (PyFloat_Check(value))
+    {
+        exposure_time = PyFloat_AsDouble(value);
+        returnCode = is_Exposure(self->handle, IS_EXPOSURE_CMD_SET_EXPOSURE, (void*)&exposure_time, sizeof(exposure_time));
+        if (returnCode != IS_SUCCESS)
+        {
+            print_error(self);
+            return -1;
+        }
+    }
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "Exposure must be an integer or a double");
+        return -1;
+    }
+
+    return 0;
+}
+
+PyObject * camera_get_exposure(Camera * self, void * closure)
+{
+    int returnCode;
+    double exposure_time;
+    returnCode = is_Exposure(self->handle, IS_EXPOSURE_CMD_GET_EXPOSURE, (void*)&exposure_time, sizeof(exposure_time));
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+    return Py_BuildValue("d", exposure_time);
+}
+
+int camera_set_white_balance(Camera * self, PyObject * value, void * closure)
+{
+    int returnCode;
+    UINT nType;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_TypeError, "White balance can not be set to NULL");
+        return -1;
+    }
+
+    if (PyInt_Check(value))
+    {
+        nType = (UINT)(PyLong_AsLong(value));
+        returnCode = is_AutoParameter(self->handle,IS_AWB_CMD_SET_TYPE, (void*)&nType, sizeof(nType));
+        if (returnCode != IS_SUCCESS)
+        {
+            print_error(self);
+            return -1;
+        }
+    }
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "White balance must be an integer");
+        return -1;
+    }
+
+    return 0;
+}
+
+PyObject * camera_get_white_balance(Camera * self, void * closure)
+{
+    int returnCode;
+    UINT nType = 0;
+
+    returnCode = is_AutoParameter(self->handle, IS_AWB_CMD_GET_TYPE, (void*)&nType, sizeof(nType));
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+    return Py_BuildValue("i", nType);
+}
+
 PyGetSetDef camera_properties[] = {
     {"master_gain", (getter)camera_get_master_gain, (setter)camera_set_master_gain, "Master Gain", NULL},
     {"red_gain", (getter)camera_get_red_gain, (setter)camera_set_red_gain, "Red Gain", NULL},
@@ -268,5 +360,7 @@ PyGetSetDef camera_properties[] = {
     {"green_gain", (getter)camera_get_green_gain, (setter)camera_set_green_gain, "Green Gain", NULL},
     {"frame_rate", (getter)camera_get_frame_rate, (setter)camera_set_frame_rate, "Frame Rate", NULL},
     {"pixel_clock", (getter)camera_get_pixel_clock, (setter)camera_set_pixel_clock, "Pixel Clock", NULL},
+    {"exposure", (getter)camera_get_exposure, (setter)camera_set_exposure, "Exposure Time", NULL},
+    {"white_balance", (getter)camera_get_white_balance, (setter)camera_set_white_balance, "Auto White Balance", NULL},
     {NULL} /* sentinel */
 };

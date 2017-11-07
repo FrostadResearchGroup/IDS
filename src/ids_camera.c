@@ -1,8 +1,11 @@
 #include <uEye.h>
 #include "ids.h"
 #include "structmember.h"
+#include <string.h>
+#include <wchar.h>
 
 extern PyObject * get_gain(Camera * self, int command);
+extern PyObject * camera_get_image(Camera * self);
 
 /*
  * Initialize the attributes of the newly created Camera object to 0
@@ -36,6 +39,11 @@ PyObject* camera_new
  */
 void camera_dealloc(Camera* self)
 {
+    if (self->status == READY)
+    {
+        is_ExitImageQueue(self->handle);
+    }
+    is_ExitCamera(self->handle);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -235,17 +243,20 @@ PyObject * camera_sensor_info(Camera * self)
 PyObject * camera_save_settings(Camera * self, PyObject * args)
 {
     int returnCode;
-    char * filename;
+    wchar_t * filename;
+    int len;
 
-    if (!PyArg_ParseTuple(args,"s", &filename))
+    if (!PyArg_ParseTuple(args,"|s", &filename))
     {
         return NULL;
     }
 
-    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, filename, NULL);
+    len = strlen(filename) + 1;
+
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_SAVE_FILE, (void *)filename, NULL);
     if (returnCode != IS_SUCCESS)
     {
-        print_error(returnCode);
+        print_error(self);
         return NULL;
     }
     Py_RETURN_NONE;
@@ -254,8 +265,9 @@ PyObject * camera_save_settings(Camera * self, PyObject * args)
 PyObject * camera_load_settings(Camera * self, PyObject * args)
 {
     int returnCode;
-    char * filename;
-    if (!PyArg_ParseTuple(args, "s", &filename))
+    wchar_t * filename;
+    int len;
+    if (!PyArg_ParseTuple(args, "|s", &filename))
     {
         return NULL;
     }
@@ -264,13 +276,73 @@ PyObject * camera_load_settings(Camera * self, PyObject * args)
     {
         return NULL;
     }
-    
-    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, filename, NULL);
+
+    len = strlen(filename) + 1;
+
+    returnCode = is_ParameterSet(self->handle, IS_PARAMETERSET_CMD_LOAD_FILE, (void *)filename, NULL);
     if (returnCode != IS_SUCCESS)
     {
-        print_error(returnCode);
+        print_error(self);
         return NULL;
     }
+    Py_RETURN_NONE;
+}
+
+PyObject * camera_get_aoi(Camera * self)
+{
+    int returnCode;
+    PyObject * x;
+    PyObject * y;
+    PyObject * height;
+    PyObject * width;
+    PyObject * dict = PyDict_New();
+
+    IS_RECT rectAOI;
+    returnCode = is_AOI(self->handle, IS_AOI_IMAGE_GET_AOI, (void *)&rectAOI, sizeof(rectAOI));
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+
+    x = Py_BuildValue("i", rectAOI.s32X);
+    y = Py_BuildValue("i", rectAOI.s32Y);
+    width = Py_BuildValue("i", rectAOI.s32Width);
+    height = Py_BuildValue("i", rectAOI.s32Height);
+
+    PyDict_SetItemString(dict, "x", x);
+    PyDict_SetItemString(dict, "y", y);
+    PyDict_SetItemString(dict, "height", height);
+    PyDict_SetItemString(dict, "width", width);
+
+    return dict;
+}
+
+PyObject * camera_set_aoi(Camera * self, PyObject * args, PyObject * kwds)
+{
+    static char *kwlist[] = {"x", "y", "width", "height", NULL};
+    int returnCode;
+    int x, y, width, height;
+    IS_RECT rectAOI;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iiii", kwlist, &x, &y, &width, &height))
+    {
+		PyErr_SetString(PyExc_TypeError, "Parsing didn't work");
+        return NULL;
+    }
+
+    rectAOI.s32X = x;
+    rectAOI.s32Y = y;
+    rectAOI.s32Width = width;
+    rectAOI.s32Height = height;
+
+    returnCode = is_AOI(self->handle, IS_AOI_IMAGE_SET_AOI, (void * )&rectAOI, sizeof(rectAOI));
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return NULL;
+    }
+
     Py_RETURN_NONE;
 }
 
@@ -346,6 +418,13 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
     }
     self->width = PyLong_AsLong(width);
     self->height = PyLong_AsLong(height);
+
+    returnCode = is_InitImageQueue(self->handle, 0);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
 
     Py_DECREF(camera_info);
 
@@ -423,6 +502,15 @@ PyMethodDef camera_methods[] = {
     },
     {"load_settings", (PyCFunction) camera_load_settings, METH_VARARGS,
      "Load camera settings from a file"
+    },
+    {"set_aoi", (PyCFunction) camera_set_aoi, METH_VARARGS | METH_KEYWORDS,
+     "Set Area of Interest"
+    },
+    {"get_aoi", (PyCFunction) camera_get_aoi, METH_VARARGS,
+     "Get Area of Interest"
+    },
+    {"get_image", (PyCFunction) camera_get_image, METH_NOARGS,
+     "Get the next image waiting in queue"
     },
     {NULL} /* Sentinel */
 };
