@@ -5,6 +5,7 @@
 PyObject * camera_video(Camera * self)
 {
     PyObject * result = NULL;
+    PyObject * argList;
     INT videoID;
     int returnCode;
 
@@ -14,7 +15,9 @@ PyObject * camera_video(Camera * self)
         print_error(self);
         return result;
     }
-    result = Py_BuildValue("i", videoID);
+    argList = Py_BuildValue("i", videoID);
+    result = PyObject_CallObject((PyObject *) &ids_VideoType, argList);
+    Py_DECREF(argList);
     return result;
 }
 
