@@ -420,6 +420,13 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
     self->width = PyLong_AsLong(width);
     self->height = PyLong_AsLong(height);
 
+    returnCode = is_GetColorDepth(self->handle, &self->bitdepth, &self->color);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
     returnCode = is_InitImageQueue(self->handle, 0);
     if (returnCode != IS_SUCCESS)
     {
