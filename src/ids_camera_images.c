@@ -1,8 +1,57 @@
 #include <uEye.h>
 #include "ids.h"
 #include <datetime.h>
+#include <numpy/arrayobject.h>
 
 #define IMAGE_TIMEOUT 1000
+
+int camera_free_api_mem(Camera * self, char ** ppBuffer, INT * pMemID, int isInSeq)
+{
+    int returnCode;
+
+    returnCode = is_FreeImageMem(self->handle, *ppBuffer, *pMemID);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
+    if (isInSeq)
+    {
+        returnCode = is_ClearSequence(self->handle);
+    }
+
+    return 0;
+}
+
+int camera_alloc_api_mem(Camera * self, char ** ppBuffer, INT * pMemID)
+{
+    int returnCode;
+
+    returnCode = is_AllocImageMem(self->handle, self->width, self->height, self->bitdepth, ppBuffer, pMemID);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
+    returnCode = is_SetImageMem(self->handle, *ppBuffer, *pMemID);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        camera_free_api_mem(self, ppBuffer, pMemID, 0);
+    }
+
+    returnCode = is_AddToSequence(self->handle, *ppBuffer, *pMemID);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        camera_free_api_mem(self, ppBuffer, pMemID, 0);
+        return -1;
+    }
+
+    return 0;
+}
 
 int camera_wait_for_image(Camera * self, char ** ppBuffer, INT * pImgID)
 {
@@ -85,22 +134,48 @@ PyObject * camera_get_image_info(Camera * self, INT imgID, int * pRetVal)
 
 PyObject * camera_get_image_as_ndarray(Camera * self, char * pBuffer, int * pRetVal)
 {
-    return NULL;
+    PyObject * img;
+    int ndims;
+    npy_intp dimensions[3];
+
+    dimensions[0] = self->height;
+    dimensions[1] = self->width;
+    if (self->color == IS_CM_MONO8 || self->color == IS_CM_SENSOR_RAW8)
+    {
+        ndims = 2;
+    }
+    else
+    {
+        ndims = 3;
+        dimensions[2] = self->bitdepth/8;
+    }
+
+    img = PyArray_SimpleNewFromData(ndims, dimensions, NPY_UINT8, pBuffer);
+    *pRetVal = 0;
+
+    return img;
 }
 
 PyObject * camera_get_image(Camera * self)
 {
     int retCode;
     INT nMemID = 0;
+    INT apiMemID;
+    char * apiMem;
     char * pBuffer = NULL;
     PyObject * img;
     PyObject * image_info;
     PyObject * returnObj;
 
+    retCode = camera_alloc_api_mem(self, &apiMem, &apiMemID);
+    if (retCode != 0)
+    {
+        return NULL;
+    }
+
     retCode = camera_wait_for_image(self, &pBuffer, &nMemID);
     if (retCode != 0)
     {
-        print_error(self);
         return NULL;
     }
 
@@ -126,6 +201,12 @@ PyObject * camera_get_image(Camera * self)
     }
 
     returnObj = Py_BuildValue("(OO)", img, image_info);
+
+    retCode = camera_free_api_mem(self, &apiMem, &apiMemID, 1);
+    if (retCode != IS_SUCCESS)
+    {
+        printf("Something went wrong while cleaning up memory\n");
+    }
 
     Py_DECREF(img);
     Py_DECREF(image_info);

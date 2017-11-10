@@ -2,6 +2,7 @@ from distutils.core import setup, Extension
 import sys
 import platform
 import os
+import numpy as np
 
 if sys.platform == "win32":
     python_path = os.path.dirname(sys.executable)
@@ -17,7 +18,7 @@ if sys.platform == "win32":
         'define_macros': [('_IDS_EXPORT', None), ('_CRT_SECURE_NO_WARNINGS', None)],
         'library_dirs': ['C:/Program Files/IDS/uEye/Develop/Lib', lib_dir],
         'libraries': libs,
-        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Develop/include', include_dir]
+        'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Develop/include', include_dir, np.get_include()]
     }
 else:
     # TODO: Support this on Linux systems
