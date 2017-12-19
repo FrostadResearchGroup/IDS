@@ -34,6 +34,38 @@ PyObject * get_gain(Camera * self, int command)
     return Py_BuildValue("i", val);
 }
 
+int display_mode_command(HIDS handle, int command)
+{
+    return is_SetDisplayMode(handle, command);
+}
+
+PyObject * camera_get_display_mode(Camera * self, void * closure)
+{
+    int value = display_mode_command(self->handle, IS_GET_DISPLAY_MODE);
+
+    return Py_BuildValue("i", value);
+}
+
+int camera_set_display_mode(Camera * self, PyObject * value, void * closure)
+{
+    int command;
+    int returnCode;
+
+    if (value == NULL)
+    {
+        PyErr_SetString(PyExc_IOError, "Display mode can't be null");
+        return -1;
+    }
+    command = (int)PyLong_AsLong(value);
+    returnCode = display_mode_command(self->handle, command);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+    return 0;
+}
+
 int camera_set_master_gain(Camera * self, PyObject * value, void * closure)
 {
     int master_gain;
@@ -366,5 +398,6 @@ PyGetSetDef camera_properties[] = {
     {"pixel_clock", (getter)camera_get_pixel_clock, (setter)camera_set_pixel_clock, "Pixel Clock", NULL},
     {"exposure", (getter)camera_get_exposure, (setter)camera_set_exposure, "Exposure Time", NULL},
     {"white_balance", (getter)camera_get_white_balance, (setter)camera_set_white_balance, "Auto White Balance", NULL},
+    {"display_mode", (getter)camera_get_display_mode, (setter)camera_set_display_mode, "Display Mode", NULL},
     {NULL} /* sentinel */
 };
