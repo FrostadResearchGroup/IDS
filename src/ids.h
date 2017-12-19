@@ -37,7 +37,11 @@ typedef struct
 typedef struct
 {
     PyObject_HEAD
-    int         videoID;
+    HIDS         handle;
+    int          videoID;
+    char         filename[256];
+    double       frame_rate;
+    volatile int is_capture;
 } Video;
 
 /*
