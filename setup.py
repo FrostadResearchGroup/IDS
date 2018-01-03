@@ -15,7 +15,7 @@ if sys.platform == "win32":
         libs = ['ueye_api', 'ueye_tools']
     args = {
         'extra_compile_args': [],
-        'define_macros': [('_IDS_EXPORT', None), ('_CRT_SECURE_NO_WARNINGS', None)],
+        'define_macros': [('_IDS_EXPORT', None), ('_CRT_SECURE_NO_WARNINGS', None), ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
         'library_dirs': ['C:/Program Files/IDS/uEye/Develop/Lib', lib_dir],
         'libraries': libs,
         'include_dirs': ['.', 'C:/Program Files/IDS/uEye/Develop/include', include_dir, np.get_include()]
