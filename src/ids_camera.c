@@ -6,6 +6,7 @@
 
 extern PyObject * get_gain(Camera * self, int command);
 extern PyObject * camera_get_image(Camera * self);
+extern PyObject * camera_video(Camera * self);
 
 /*
  * Initialize the attributes of the newly created Camera object to 0
@@ -419,6 +420,13 @@ int camera_init(Camera * self, PyObject * args, PyObject * kwds)
     self->width = PyLong_AsLong(width);
     self->height = PyLong_AsLong(height);
 
+    returnCode = is_GetColorDepth(self->handle, &self->bitdepth, &self->color);
+    if (returnCode != IS_SUCCESS)
+    {
+        print_error(self);
+        return -1;
+    }
+
     returnCode = is_InitImageQueue(self->handle, 0);
     if (returnCode != IS_SUCCESS)
     {
@@ -472,7 +480,7 @@ PyObject * camera_status(Camera * self)
         result = Py_BuildValue("s", "Connected");
     }
     return result;
-} 
+}
 
 /*
  * Declaration of all the publicly accessible attributes of the Camera object
@@ -511,6 +519,9 @@ PyMethodDef camera_methods[] = {
     },
     {"get_image", (PyCFunction) camera_get_image, METH_NOARGS,
      "Get the next image waiting in queue"
+    },
+    {"video", (PyCFunction) camera_video, METH_NOARGS,
+     "Get the video object"
     },
     {NULL} /* Sentinel */
 };
